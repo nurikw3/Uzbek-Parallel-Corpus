@@ -1,0 +1,6 @@
+# submission/dataset.csv
+submission/mlruns
+# submission/predictions_model_1.csv
+# submission/predictions_model_2.csv
+submission/__pycache__
+submission/mlflow.db
