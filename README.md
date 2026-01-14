@@ -25,6 +25,9 @@ The project evaluates Zero-Shot performance of **NLLB-200** and **M2M100** on tw
 ![image](/assets/word_count_distribution.png)
 ![image](/assets/inter.jpeg)
 
+# 📊 Results
+![image](/assets/nllb.png)
+![image](/assets/m2m.png)
 # 🚀 Usage (via uv)
 ```bash
 uv sync
