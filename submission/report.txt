@@ -2,59 +2,92 @@ Machine Translation Report: Low-Resource Southern Uzbek
 
 1. Executive Summary
 
-This study explores translation of Southern Uzbek (Arabic script, uzs_Arab) to English and Standard Uzbek. Initial zero-shot experiments using NLLB-200 and M2M100 produced low-quality results. By introducing pivot translation, beam search, ensembling, and post-processing, system performance improved dramatically (BLEU 24.5, BERTScore 86.65) without fine-tuning. 
-Full code, changes and details are available on GitHub.
+This work studies machine translation for Southern Uzbek (Arabic script, uzs_Arab) into English and Standard Uzbek. Zero-shot experiments with large multilingual models (NLLB-200 and M2M100) show that direct translation quality is low due to script and dialect mismatch.
+
+By redesigning the inference pipeline using pivot translation, beam search, ensembling, and post-processing, translation quality can be substantially improved without any fine-tuning.
+
+The best system (NLLB-200 with pivot translation) achieves:
+BLEU 24.46, chrF 34.92, BERTScore F1 64.16 for Southern Uzbek to English.
+BLEU 14.75, chrF 43.84, METEOR 16.04, BERTScore F1 86.6 for Southern Uzbek to Standard Uzbek. (Normalization)
+
+This represents almost a three times improvement in BLEU over the direct zero-shot baseline.
 
 2. Dataset and Preprocessing
 
-We used the “Lutfiy” parallel corpus with ~2,500 sentence pairs.
+We use the Lutfiy Southern Uzbek parallel corpus containing approximately 2,500 sentence pairs.
+
 Source: Southern Uzbek (Arabic script, uzs_Arab)
-Target: English (eng_Latn) and Standard Uzbek (uzn_Latn)
+Targets:
 
-Original preprocessing included data cleaning, duplicate removal, synthetic reference generation for normalization, and splitting into validation (20%) and test (80%).
+* English (eng_Latn)
+* Standard Uzbek (uzn_Latn)
 
-Updates included a regex-based cleaning pipeline and automatic post-processing to remove repeated n-grams and common artifacts.
+Preprocessing includes data cleaning and duplicate removal, synthetic reference generation for normalization, and an 80/20 train-validation split.
+
+Additional improvements include regex-based text normalization and automatic post-processing to remove repeated n-grams and decoding artifacts.
 
 3. Models and Methodology
 
 Models:
 
-* NLLB-200 (Distilled 600M) – explicit support for Arabic-script Uzbek
-* M2M100 (418M) – baseline, struggled with Arabic script
+* NLLB-200 (Distilled 600M), which explicitly supports Arabic-script Uzbek.
+* M2M100 (418M), used as a baseline and performing poorly on Arabic-script input.
 
-Original approach: greedy zero-shot decoding.
-Updated approach:
+Decoding strategies.
 
-* Beam search (beam size 5)
-* Pivot translation: Southern Uzbek → Standard Uzbek → English
-* Ensembling: multiple candidates, best chosen heuristically
-* Post-processing to remove repetition and artifacts
+Baseline:
+
+* Greedy zero-shot decoding.
+
+Improved pipeline:
+
+* Beam search with beam size 5.
+* Pivot translation: Southern Uzbek to Standard Uzbek to English.
+* Ensembling of multiple candidates with heuristic selection.
+* Post-processing to remove repetition and artifacts.
 
 4. Evaluation Results
 
-Southern Uzbek → English:
+Southern Uzbek to English:
 
-* Baseline NLLB: BLEU 8.8, chrF++ 38.2
-* Baseline M2M100: BLEU 10.2, chrF++ 18.5
-* Enhanced Pivot NLLB: BLEU 24.5, chrF++ 34.9, BERTScore 86.65
+NLLB Direct:
+BLEU 8.80, chrF 38.27, METEOR 27.10, BERTScore F1 60.29
 
-Southern Uzbek → Standard Uzbek (Normalization):
+NLLB Pivot:
+BLEU 24.46, chrF 34.92, METEOR 28.74, BERTScore F1 64.16
 
-* Baseline NLLB: BLEU 13.8, chrF++ 45.3
-* Enhanced NLLB: BLEU 14.7, chrF++ 43.7
+NLLB Ensemble:
+BLEU 24.33, chrF 39.82, METEOR 28.94, BERTScore F1 64.09
+
+M2M100:
+BLEU 10.28, chrF 18.59, METEOR 16.80, BERTScore F1 46.40
+
+Southern Uzbek to Standard Uzbek (Normalization):
+
+NLLB:
+BLEU 14.75, chrF 43.84, METEOR 16.04, BERTScore F1 86.65
+
+M2M100:
+BLEU 2.71, chrF 10.01, METEOR 3.04, BERTScore F1 74.03
 
 5. Discussion
 
-* Script barrier: Arabic-script input caused poor performance in models without explicit support (M2M100).
-* Dialect normalization: Pivot translation effectively converts dialectal Arabic-script Uzbek to standard Latin Uzbek, improving downstream English translation.
-* Metrics: chrF++ better captures agglutinative features; BERTScore shows semantic preservation despite low BLEU in some baseline cases.
-* Improvements: Updated inference pipeline increased BLEU 2× compared to the baseline.
+Models that do not explicitly support Arabic-script Uzbek suffer from a strong script barrier, which explains the extremely poor performance of M2M100.
+
+Dialect normalization using NLLB partially converts Southern Uzbek into Standard Uzbek. The very high BERTScore of 86.65 indicates strong semantic preservation despite low BLEU.
+
+Pivot translation using Standard Uzbek as an intermediate representation dramatically improves English translation quality, increasing BLEU from 8.8 to 24.5.
+
+BLEU is very strict for morphologically rich languages, while chrF better reflects character-level similarity. BERTScore shows that even low-BLEU systems may preserve meaning reasonably well.
+
+Overall, the improved pipeline yields almost a three times BLEU improvement over the direct baseline.
 
 6. Limitations
 
-* Synthetic references introduce bias; human-verified gold standards would improve evaluation.
-* Some hallucinations remain; fine-tuning could further enhance performance.
+Synthetic references for normalization introduce evaluation bias. Some hallucinations and repetition artifacts remain. No fine-tuning was performed, and task-specific training would likely further improve results.
 
 7. Conclusion
 
-High-quality translation for low-resource languages can be achieved without model fine-tuning by carefully designing the inference pipeline. Pivot translation combined with beam search, ensembling, and post-processing transformed a weak baseline into a practically usable system. NLLB-200 with this pipeline is recommended for Southern Uzbek translation. Full implementation details and updates are on GitHub.
+This work shows that practically usable translation quality for a low-resource language can be achieved without fine-tuning by carefully designing the inference pipeline.
+
+Pivot translation, beam search, ensembling, and post-processing transform a weak zero-shot baseline into a significantly stronger system. Among the tested models, NLLB-200 with pivot translation is clearly the best choice for Southern Uzbek translation.
