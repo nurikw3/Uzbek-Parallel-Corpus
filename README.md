@@ -27,3 +27,5 @@ uv run mlflow ui --port 5001
 
 Все эксперименты логируются в mlflow:
 `mlflow ui --port 5001`
+
+![image](assets/word_count_distribution.png)
